@@ -45,7 +45,8 @@ for i, info in enumerate(dataset.class_info):
     print("{:3}. {:50}".format(i, info['name']))
 
 # Load random image and mask.
-image_id = random.choice(dataset.image_ids)
+#image_id = random.choice(dataset.image_ids)
+image_id = 13
 image = dataset.load_image(image_id)
 mask, class_ids = dataset.load_mask(image_id)
 # Compute Bounding box
@@ -53,14 +54,18 @@ bbox = utils.extract_bboxes(mask)
 
 # Display image and additional stats
 print("image_id ", image_id, dataset.image_reference(image_id))
+base = os.path.basename(dataset.image_reference(image_id))
+filename = os.path.splitext(base)[0]
+print(filename)
 log("image", image)
 log("mask", mask)
 log("class_ids", class_ids)
 log("bbox", bbox)
 
 # apply mask and crop image
-index = 0
-mask = mask.astype(np.uint8) * 255
-masked = cv.bitwise_and(image, image, mask=mask[:,:,index])
-cropped = masked[bbox[index][0]:bbox[index][2], bbox[index][1]:bbox[index][3]]
-io.imsave('test.jpg', cropped)
+for index in range(mask.shape[2]):
+    mask = mask.astype(np.uint8) * 255
+    masked = cv.bitwise_and(image, image, mask=mask[:,:,index])
+    cropped = masked[bbox[index][0]:bbox[index][2], bbox[index][1]:bbox[index][3]]
+    outputfile = filename + "_" + str(index) + ".bmp"
+    io.imsave(outputfile, cropped)
