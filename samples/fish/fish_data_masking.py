@@ -47,7 +47,7 @@ for i, info in enumerate(dataset.class_info):
 # Load random image and mask.
 #image_id = random.choice(dataset.image_ids)
 #image_id = 13
-for image_id in range(3):
+for image_id in range(len(dataset.image_ids)):
     image = dataset.load_image(image_id)
     mask, class_ids = dataset.load_mask(image_id)
     # Compute Bounding box
@@ -62,6 +62,10 @@ for image_id in range(3):
     log("mask", mask)
     log("class_ids", class_ids)
     log("bbox", bbox)
+
+    # if no any mask label
+    if mask.shape[2] <= 0:
+        continue
 
     # apply mask and crop image
     for index in range(mask.shape[2]):
