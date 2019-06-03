@@ -25,6 +25,9 @@ Usage: import the module (see Jupyter notebooks for examples), or run from
 
     # Apply color splash to video using the last weights you trained
     python3 fish.py splash --weights=last --video=<URL or path to file>
+
+    # Apply segmentation to an image
+    python3 fish.py crop --weights=/path/to/weights/file.h5 --image=<URL or path to file>
 """
 
 import os
@@ -33,6 +36,8 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
+from skimage import io
+import cv2 as cv
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -273,6 +278,34 @@ def detect_and_color_splash(model, image_path=None, video_path=None):
         vwriter.release()
     print("Saved to ", file_name)
 
+def detect_and_crop(model, image_path=None):
+    assert image_path
+
+    if image_path:
+        # Run model detection and generate cropped image
+        print("Running on {}".format(args.image))
+        # Read image
+        image = skimage.io.imread(args.image)
+        
+        # get filename
+        base = os.path.basename(args.image)
+        filename = os.path.splitext(base)[0]
+
+        # Detect objects
+        r = model.detect([image], verbose=1)[0]
+
+        # if no any mask
+        if r['masks'].shape[2] <= 0:
+            print("detect no fish")
+            return
+
+        for index in range(r['masks'].shape[2]):
+            print("cropping region ", index)
+            mask = r['masks'].astype(np.uint8) * 255 
+            masked = cv.bitwise_and(image, image, mask=mask[:, :, index])
+            cropped = masked[r['rois'][index][0]:r['rois'][index][2], r['rois'][index][1]:r['rois'][index][3]]
+            outputfile = filename + "_" + str(index) + ".bmp"
+            io.imsave(outputfile, cropped)
 
 ############################################################
 #  Training
@@ -286,7 +319,7 @@ if __name__ == '__main__':
         description='Train Mask R-CNN to detect fishs.')
     parser.add_argument("command",
                         metavar="<command>",
-                        help="'train' or 'splash'")
+                        help="'train' or 'splash' or 'crop'")
     parser.add_argument('--dataset', required=False,
                         metavar="/path/to/fish/dataset/",
                         help='Directory of the Fish dataset')
@@ -311,6 +344,8 @@ if __name__ == '__main__':
     elif args.command == "splash":
         assert args.image or args.video,\
                "Provide --image or --video to apply color splash"
+    elif args.command == "crop":
+        assert args.image, "Provide --image to apply segmentation"
 
     print("Weights: ", args.weights)
     print("Dataset: ", args.dataset)
@@ -368,6 +403,8 @@ if __name__ == '__main__':
     elif args.command == "splash":
         detect_and_color_splash(model, image_path=args.image,
                                 video_path=args.video)
+    elif args.command == "crop":
+        detect_and_crop(model, image_path=args.image)
     else:
         print("'{}' is not recognized. "
               "Use 'train' or 'splash'".format(args.command))
