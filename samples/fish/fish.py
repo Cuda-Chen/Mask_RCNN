@@ -288,8 +288,9 @@ def detect_and_crop(model, image_path=None):
         image = skimage.io.imread(args.image)
         
         # get filename
-        base = os.path.basename(args.image)
-        filename = os.path.splitext(base)[0]
+        #base = os.path.basename(args.image)
+        #filename = os.path.splitext(base)[0]
+        filename = os.path.splitext(args.image)[0]
 
         # Detect objects
         r = model.detect([image], verbose=1)[0]
