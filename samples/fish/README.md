@@ -27,7 +27,7 @@ python3 fish.py splash --weights=/path/to/mask_rcnn/mask_rcnn_fish.h5 --video=<f
 ## Run Jupyter notebooks
 Open the `inspect_fish_data.ipynb` or `inspect_fish_model.ipynb` Jupter notebooks. You can use these notebooks to explore the dataset and run through the detection pipelie step by step.
 
-## Train the Balloon model
+## Train the Fish model
 
 Train a new model starting from pre-trained COCO weights
 ```
