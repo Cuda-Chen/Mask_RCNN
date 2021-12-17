@@ -31,6 +31,7 @@ Usage: import the module (see Jupyter notebooks for examples), or run from
 """
 
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import sys
 import json
 import datetime
